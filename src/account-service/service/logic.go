@@ -42,13 +42,13 @@ func (s service) CreateUser(ctx context.Context, email string, password string) 
 	return user, nil
 }
 
-func (s service) GetUser(ctx context.Context, id string) (repository.User, error) {
+func (s service) GetUser(id string) (repository.User, error) {
 	logger := log.With(s.logger, "method", "GetUser")
 
 	var user repository.User
 	var err error
 
-	if user, err = s.repository.GetUser(ctx, id); err != nil {
+	if user, err = s.repository.GetUser(id); err != nil {
 		level.Error(logger).Log("error", err)
 		return repository.User{}, err
 	}

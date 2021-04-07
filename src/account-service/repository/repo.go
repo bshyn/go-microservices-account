@@ -77,7 +77,7 @@ func (repo *repo) GetUserByEmail(email string) (User, error) {
 	var password string
 
 	err := repo.db.QueryRow(query, email).Scan(&id, &password)
-	if err != nil {
+	if err != sql.ErrNoRows && err != nil {
 		return User{}, RepoErr
 	}
 
