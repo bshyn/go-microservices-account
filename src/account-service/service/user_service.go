@@ -5,7 +5,7 @@ import (
 	"github.com/bshyn/go-microservices/account/repository"
 )
 
-type Service interface {
+type UserService interface {
 	CreateUser(ctx context.Context, email string, password string) (repository.User, error)
 	GetUser(id string) (repository.User, error)
 }

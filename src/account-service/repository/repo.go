@@ -11,6 +11,7 @@ var (
 	RepoErr               = errors.New("unable to handle Repo Request")
 	EmptyUserErr          = errors.New("password and email are required")
 	UserWithMailExistsErr = errors.New("an user with this mail already exists")
+	UserNotFoundErr       = errors.New("user not found")
 )
 
 type repo struct {
@@ -58,6 +59,9 @@ func (repo *repo) GetUser(id string) (User, error) {
 
 	err := repo.db.QueryRow(query, id).Scan(&email, &password)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return User{}, UserNotFoundErr
+		}
 		return User{}, RepoErr
 	}
 
@@ -78,6 +82,25 @@ func (repo *repo) GetUserByEmail(email string) (User, error) {
 
 	err := repo.db.QueryRow(query, email).Scan(&id, &password)
 	if err != sql.ErrNoRows && err != nil {
+		return User{}, RepoErr
+	}
+
+	user := User{
+		ID:       id,
+		Email:    email,
+		Password: password,
+	}
+
+	return user, nil
+}
+
+func (repo repo) GetUserByEmailAndPassword(email string, password string) (User, error) {
+	query := `SELECT ID FROM USERS WHERE EMAIL = ? AND PASSWORD = ?`
+
+	var id string
+
+	err := repo.db.QueryRow(query, email, password).Scan(&id)
+	if err != nil {
 		return User{}, RepoErr
 	}
 

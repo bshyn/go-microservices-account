@@ -12,4 +12,5 @@ type Repository interface {
 	CreateUser(ctx context.Context, user User) error
 	GetUser(id string) (User, error)
 	GetUserByEmail(email string) (User, error)
+	GetUserByEmailAndPassword(email string, password string) (User, error)
 }

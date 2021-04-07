@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/bshyn/go-microservices/account/config"
 	"github.com/bshyn/go-microservices/account/repository"
@@ -20,30 +21,54 @@ import (
 )
 
 func main() {
-	var logger log.Logger
+	var userLogger log.Logger
 	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.NewSyncLogger(logger)
-		logger = log.With(logger,
+		userLogger = log.NewLogfmtLogger(os.Stderr)
+		userLogger = log.NewSyncLogger(userLogger)
+		userLogger = log.With(userLogger,
+			"logger", "userLogger",
 			"service", "account",
-			"time:", log.DefaultTimestampUTC,
+			"time", log.DefaultTimestampUTC,
+			"caller", log.DefaultCaller,
+		)
+	}
+	var authLogger log.Logger
+	{
+		authLogger = log.NewLogfmtLogger(os.Stdout)
+		authLogger = log.NewSyncLogger(authLogger)
+		authLogger = log.With(authLogger,
+			"loggerr", "authLogger",
+			"service", "account",
+			"time", log.DefaultTimestampUTC,
 			"caller", log.DefaultCaller,
 		)
 	}
 
-	level.Info(logger).Log("msg", "service started")
-	defer level.Info(logger).Log("msg", "service stopped")
-
+	level.Info(userLogger).Log("msg", "service started")
+	defer level.Info(userLogger).Log("msg", "service stopped")
 
 	dbHost := os.Getenv("DB_HOST")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
-
-	dbSource := fmt.Sprintf("%s:%s@tcp(%s)/account",  dbUser, dbPassword, dbHost)
-
-	level.Debug(logger).Log("dbSource", dbSource)
+	dbSource := fmt.Sprintf("%s:%s@tcp(%s)/account", dbUser, dbPassword, dbHost)
 
 	port := os.Getenv("PORT")
+
+	var jwtExpiration time.Duration
+	{
+		jwtExpirationStr := os.Getenv("JWT_EXPIRATION")
+		duration, err := time.ParseDuration(jwtExpirationStr)
+		if err != nil {
+			panic(err)
+		}
+		jwtExpiration = duration
+	}
+
+	var jwtKey []byte
+	{
+		jwtKeyStr := os.Getenv("JWT_KEY")
+		jwtKey = []byte(jwtKeyStr)
+	}
 
 	var db *sql.DB
 	{
@@ -51,16 +76,21 @@ func main() {
 
 		db, err = sql.Open("mysql", dbSource)
 		if err != nil {
-			level.Error(logger).Log("exit", err)
+			level.Error(userLogger).Log("exit", err)
 			os.Exit(-1)
 		}
 	}
 
 	ctx := context.Background()
-	var srv service.Service
+	var userSrv service.UserService
 	{
-		repository := repository.NewRepo(db, logger)
-		srv = service.NewService(repository, logger)
+		repository := repository.NewRepo(db, userLogger)
+		userSrv = service.NewUserService(repository, userLogger)
+	}
+	var authSrv service.AuthService
+	{
+		repository := repository.NewRepo(db, authLogger)
+		authSrv = service.NewAuthService(jwtKey, jwtExpiration, repository, authLogger)
 	}
 
 	errs := make(chan error)
@@ -71,13 +101,13 @@ func main() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 
-	endpoints := config.MakeEndpoints(srv)
+	endpoints := config.MakeEndpoints(userSrv, authSrv, jwtKey)
 
 	go func() {
 		fmt.Println("listening on port", port)
 		handler := config.NewHTTPServer(ctx, endpoints)
-		errs <- http.ListenAndServe(":" + port, handler)
+		errs <- http.ListenAndServe(":"+port, handler)
 	}()
 
-	level.Error(logger).Log("exit", <-errs)
+	level.Error(userLogger).Log("exit", <-errs)
 }
