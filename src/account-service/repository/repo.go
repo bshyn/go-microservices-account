@@ -26,13 +26,13 @@ func NewRepo(db *sql.DB, logger log.Logger) Repository {
 }
 
 func (repo *repo) CreateUser(ctx context.Context, user User) error {
-	sql := `INSERT INTO USERS (ID, EMAIL, PASSWORD) VALUES (?, ?, ?)`
+	query := `INSERT INTO USERS (ID, EMAIL, PASSWORD) VALUES (?, ?, ?)`
 
 	if user.Email == "" || user.Password == "" {
 		return EmptyUserErr
 	}
 
-	savedUser, err := repo.GetUserByEmail(ctx, user.Email)
+	savedUser, err := repo.GetUserByEmail(user.Email)
 
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (repo *repo) CreateUser(ctx context.Context, user User) error {
 		return UserWithMailExistsErr
 	}
 
-	_, err = repo.db.ExecContext(ctx, sql, user.ID, user.Email, user.Password)
+	_, err = repo.db.ExecContext(ctx, query, user.ID, user.Email, user.Password)
 
 	if err != nil {
 		return err
@@ -50,13 +50,13 @@ func (repo *repo) CreateUser(ctx context.Context, user User) error {
 	return nil
 }
 
-func (repo *repo) GetUser(ctx context.Context, id string) (User, error) {
-	sql := `SELECT EMAIL, PASSWORD FROM USERS WHERE ID = ?`
+func (repo *repo) GetUser(id string) (User, error) {
+	query := `SELECT EMAIL, PASSWORD FROM USERS WHERE ID = ?`
 
 	var email string
 	var password string
 
-	err := repo.db.QueryRow(sql, id).Scan(&email, &password)
+	err := repo.db.QueryRow(query, id).Scan(&email, &password)
 	if err != nil {
 		return User{}, RepoErr
 	}
@@ -70,13 +70,13 @@ func (repo *repo) GetUser(ctx context.Context, id string) (User, error) {
 	return user, nil
 }
 
-func (repo *repo) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	sql := `SELECT ID, PASSWORD FROM USERS WHERE EMAIL = ?`
+func (repo *repo) GetUserByEmail(email string) (User, error) {
+	query := `SELECT ID, PASSWORD FROM USERS WHERE EMAIL = ?`
 
 	var id string
 	var password string
 
-	err := repo.db.QueryRow(sql, email).Scan(&id, &password)
+	err := repo.db.QueryRow(query, email).Scan(&id, &password)
 	if err != nil {
 		return User{}, RepoErr
 	}
