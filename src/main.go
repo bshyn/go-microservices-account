@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bshyn/go-microservices/account/config"
-	"github.com/bshyn/go-microservices/account/repository"
-	"github.com/bshyn/go-microservices/account/service"
+	"github.com/bshyn/go-microservices-account/config"
+	"github.com/bshyn/go-microservices-account/repository"
+	"github.com/bshyn/go-microservices-account/service"
 
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"

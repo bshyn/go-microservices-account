@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/bshyn/go-microservices/account/repository"
+	"github.com/bshyn/go-microservices-account/repository"
 )
 
 type UserService interface {

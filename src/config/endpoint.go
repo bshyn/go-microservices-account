@@ -2,8 +2,8 @@ package config
 
 import (
 	"context"
-	"github.com/bshyn/go-microservices/account/model"
-	"github.com/bshyn/go-microservices/account/service"
+	"github.com/bshyn/go-microservices-account/model"
+	"github.com/bshyn/go-microservices-account/service"
 	stdjwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"

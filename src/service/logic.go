@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/bshyn/go-microservices/account/repository"
+	"github.com/bshyn/go-microservices-account/repository"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"

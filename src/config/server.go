@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"github.com/bshyn/go-microservices/account/model"
+	"github.com/bshyn/go-microservices-account/model"
 	"net/http"
 
 	"github.com/go-kit/kit/auth/jwt"

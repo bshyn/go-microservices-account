@@ -9,8 +9,8 @@ ENV GO111MODULE=on
 WORKDIR /app/go-app
 
 # We want to populate the module cache based on the go.{mod,sum} files.
-COPY go.mod .
-COPY go.sum .
+COPY src/go.mod .
+COPY src/go.sum .
 
 RUN go mod download
 

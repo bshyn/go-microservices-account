@@ -1,4 +1,4 @@
-module github.com/bshyn/go-microservices/account
+module github.com/bshyn/go-microservices-account
 
 go 1.16
 
